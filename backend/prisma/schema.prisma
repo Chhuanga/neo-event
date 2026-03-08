@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  SECRETARIAT
+  CASE_MANAGER
+  STAFF
+}
+
+enum FeedbackType {
+  FEEDBACK
+  COMPLAINT
+}
+
+enum Category {
+  SAFETY
+  POLICY
+  FACILITIES
+  HR
+  OTHER
+}
+
+enum Status {
+  NEW
+  ASSIGNED
+  IN_PROGRESS
+  PENDING
+  RESOLVED
+  ESCALATED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  role       Role     @default(STAFF)
+  department String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  submissions Submission[] @relation("SubmittedBy")
+  assignedTo  Submission[] @relation("AssignedTo")
+  comments    Comment[]
+  votes       Vote[]
+
+  @@map("users")
+}
+
+model Submission {
+  id          String       @id @default(uuid())
+  trackingId  String       @unique
+  title       String
+  description String
+  type        FeedbackType
+  category    Category     @default(OTHER)
+  department  String
+  location    String
+  severity    Severity     @default(MEDIUM)
+  status      Status       @default(NEW)
+  attachment  String?
+  isAnonymous Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  submittedById String?
+  submittedBy   User?   @relation("SubmittedBy", fields: [submittedById], references: [id])
+
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTo", fields: [assignedToId], references: [id])
+
+  comments Comment[]
+
+  @@map("submissions")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  @@map("comments")
+}
+
+model Poll {
+  id        String   @id @default(uuid())
+  question  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  options PollOption[]
+
+  @@map("polls")
+}
+
+model PollOption {
+  id     String @id @default(uuid())
+  text   String
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  votes Vote[]
+
+  @@map("poll_options")
+}
+
+model Vote {
+  id           String     @id @default(uuid())
+  pollOptionId String
+  pollOption   PollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id])
+  pollId       String
+  createdAt    DateTime   @default(now())
+
+  // Ensure a user can only vote once per poll
+  @@unique([userId, pollId])
+  @@map("votes")
+}
+
+model MeetingMinute {
+  id        String   @id @default(uuid())
+  title     String
+  fileUrl   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("meeting_minutes")
+}
