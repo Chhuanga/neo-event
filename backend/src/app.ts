@@ -17,7 +17,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files statically
-app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+// Use process.cwd() so the path resolves correctly under both ts-node-dev and compiled JS
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
