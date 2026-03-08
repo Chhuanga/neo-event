@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.routes';
 import submissionRoutes from './routes/submission.routes';
 import pollRoutes from './routes/poll.routes';
 import publicRoutes from './routes/public.routes';
+import analyticsRoutes from './routes/analytics.routes';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/polls', pollRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // ─── Error Handler (must be last) ────────────────────────────────────────────
 app.use(errorHandler);
