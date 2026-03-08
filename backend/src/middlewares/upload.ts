@@ -3,7 +3,8 @@ import path from 'path';
 import fs from 'fs';
 
 // Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../../uploads');
+// Use process.cwd() so the path resolves correctly under both ts-node-dev and compiled JS
+const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
