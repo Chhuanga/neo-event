@@ -3,3 +3,4 @@ dist/
 .env
 *.log
 /frontend_implementation.md
+/uploads/
